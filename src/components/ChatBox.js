@@ -18,7 +18,18 @@ const ChatBox = () => {
   useEffect(() => {
     setLoading(true);
     const unsubscribe = subscribeToMessages((newMessages) => {
-      setMessages(newMessages);
+      // Add client-side timestamps to messages if they don't have them
+      const messagesWithTimestamps = newMessages.map(msg => {
+        if (!msg.timestamp) {
+          return {
+            ...msg,
+            timestamp: msg.createdAt ? msg.createdAt.toMillis() : Date.now()
+          };
+        }
+        return msg;
+      });
+      
+      setMessages(messagesWithTimestamps);
       setLoading(false);
     });
 
@@ -35,11 +46,77 @@ const ChatBox = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Store pending whereabout questions to respond to after a delay
+  const [pendingWhereaboutQuestions, setPendingWhereaboutQuestions] = useState([]);
+
+  // Process pending whereabout questions after a delay
+  useEffect(() => {
+    // Process any pending whereabout questions
+    if (pendingWhereaboutQuestions.length > 0) {
+      const questionData = pendingWhereaboutQuestions[0];
+      const timeSinceQuestion = Date.now() - questionData.timestamp;
+      
+      // If it's been more than 10 seconds and no one has answered
+      if (timeSinceQuestion >= 10000) {
+        // Check if someone else has answered in the meantime
+        const hasBeenAnswered = messages.some(msg => {
+          // Check if any message after the question mentions the target user
+          return msg.timestamp > questionData.timestamp && 
+                 msg.userId !== 'whereabouts-assistant' &&
+                 msg.text.toLowerCase().includes(questionData.targetUser.toLowerCase());
+        });
+
+        if (!hasBeenAnswered) {
+          // Send the delayed response
+          const sendDelayedResponse = async () => {
+            try {
+              // Create a response message
+              const responseData = {
+                text: questionData.responseText,
+                userId: 'whereabouts-assistant',
+                userName: 'tung tung tung sahur',
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              };
+              
+              // Add the response to Firestore
+              await addMessage(responseData);
+              console.log('Sent delayed whereabout response after 10 seconds');
+            } catch (error) {
+              console.error('Error sending delayed response:', error);
+            }
+          };
+          
+          sendDelayedResponse();
+        } else {
+          console.log('Question was already answered by someone else');
+        }
+        
+        // Remove this question from the pending queue
+        setPendingWhereaboutQuestions(prev => prev.slice(1));
+      }
+    }
+    
+    // Check pending questions every second
+    const timer = setInterval(() => {
+      if (pendingWhereaboutQuestions.length > 0) {
+        setPendingWhereaboutQuestions([...pendingWhereaboutQuestions]); // Force re-render to check time
+      }
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, [pendingWhereaboutQuestions, messages]);
+
   // Process a message for whereabouts information
   const processMessageForWhereabouts = async (messageData) => {
     try {
+      // Add timestamp to the message data for tracking
+      const messageWithTimestamp = {
+        ...messageData,
+        timestamp: Date.now()
+      };
+      
       // Detect if the message contains whereabouts information
-      const whereaboutInfo = detectWhereaboutInMessage(messageData);
+      const whereaboutInfo = detectWhereaboutInMessage(messageWithTimestamp);
       
       if (whereaboutInfo) {
         console.log('Detected whereabout info:', whereaboutInfo);
@@ -55,14 +132,14 @@ const ChatBox = () => {
       
       // Check if the message is asking about someone's whereabouts
       const askingAboutPattern = /(?:where is|where's|dimana|di mana|mana|kemana|ke mana) ([a-z0-9\s]+)(?:\?|)/i;
-      const askingMatch = messageData.text.match(askingAboutPattern);
+      const askingMatch = messageWithTimestamp.text.match(askingAboutPattern);
       
       if (askingMatch) {
         const targetUser = askingMatch[1].trim();
         console.log('User is asking about:', targetUser);
         
         // Don't respond if it's the Gemini assistant asking
-        if (messageData.userId !== 'gemini-assistant' && messageData.userId !== 'user-query') {
+        if (messageWithTimestamp.userId !== 'gemini-assistant' && messageWithTimestamp.userId !== 'user-query') {
           // Get the whereabouts information
           const whereaboutInfo = await getUserWhereabout(targetUser);
           
@@ -70,16 +147,18 @@ const ChatBox = () => {
             // Create a response message
             const responseText = `Berdasarkan maklumat yang saya ada, ${whereaboutInfo.userName} menyebut bahawa dia ${whereaboutInfo.whereabout}.`;
             
-            // Add the response to the chat
-            const responseData = {
-              text: responseText,
-              userId: 'whereabouts-assistant',
-              userName: 'tung tung tung sahur',
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            };
+            // Instead of responding immediately, add to pending questions queue
+            setPendingWhereaboutQuestions(prev => [
+              ...prev, 
+              {
+                targetUser,
+                responseText,
+                timestamp: Date.now(),
+                questionerId: messageWithTimestamp.userId
+              }
+            ]);
             
-            // Add the response to Firestore
-            await addMessage(responseData);
+            console.log('Added whereabout question to pending queue with 10 second delay');
           }
         }
       }
