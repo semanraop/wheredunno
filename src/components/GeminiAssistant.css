@@ -1,0 +1,131 @@
+.gemini-assistant {
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 15px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.gemini-header {
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gemini-header h3 {
+  margin: 0;
+  color: #4285F4;
+  font-size: 1.2rem;
+}
+
+.model-status {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.model-status.ready {
+  background-color: #e6f4ea;
+  color: #137333;
+}
+
+.model-status.error {
+  background-color: #fce8e6;
+  color: #c5221f;
+}
+
+.gemini-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.gemini-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-size: 1rem;
+}
+
+.gemini-input:focus {
+  outline: none;
+  border-color: #4285F4;
+}
+
+.gemini-button {
+  padding: 10px 15px;
+  background-color: #4285F4;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.gemini-button:hover {
+  background-color: #3367D6;
+}
+
+.gemini-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.gemini-error {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  margin: 10px 0;
+  text-align: center;
+}
+
+.gemini-tips {
+  margin-top: 15px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.gemini-tips p {
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.gemini-tips ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.gemini-tips li {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 3px;
+}
+
+.gemini-troubleshooting {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px dashed #ddd;
+}
+
+.gemini-troubleshooting p {
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+  color: #c5221f;
+}
+
+.gemini-troubleshooting ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.gemini-troubleshooting li {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 3px;
+}

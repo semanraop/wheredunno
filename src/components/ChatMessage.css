@@ -1,0 +1,106 @@
+.message-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.message-container.user {
+  align-items: flex-end;
+}
+
+.message-container.other {
+  align-items: flex-start;
+}
+
+.message-container.gemini {
+  align-items: flex-start;
+}
+
+.message-user {
+  font-size: 0.8rem;
+  margin-bottom: 3px;
+  color: #666;
+  padding-left: 10px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.gemini-user {
+  color: #4285F4;
+  font-weight: 600;
+}
+
+.gemini-badge {
+  background-color: #4285F4;
+  color: white;
+  font-size: 0.6rem;
+  padding: 2px 5px;
+  border-radius: 10px;
+  margin-left: 5px;
+  font-weight: bold;
+}
+
+.message {
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 18px;
+  position: relative;
+  word-wrap: break-word;
+}
+
+.user-message {
+  background-color: #0084ff;
+  color: white;
+  border-bottom-right-radius: 5px;
+}
+
+.other-message {
+  background-color: #f1f0f0;
+  color: #333;
+  border-bottom-left-radius: 5px;
+}
+
+.gemini-message {
+  background-color: #E8F0FE;
+  color: #333;
+  border-bottom-left-radius: 5px;
+  border-left: 3px solid #4285F4;
+}
+
+.message p {
+  margin: 0;
+  padding: 0;
+  margin-bottom: 15px;
+}
+
+.message-time {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+}
+
+.other-message .message-time {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.gemini-message .message-time {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+/* Loading and error states */
+.loading-messages,
+.error-message,
+.no-messages {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+.error-message {
+  color: #e74c3c;
+}
