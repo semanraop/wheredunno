@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from '../firebase/config';
+import { auth, db } from '../firebase/config';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
   signInAnonymously,
-  signOut 
+  signOut,
+  updateProfile
 } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import './Auth.css';
 
 // Helper function to get user-friendly error messages
@@ -35,6 +37,7 @@ const getErrorMessage = (errorCode) => {
 const Auth = ({ currentUser }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -74,10 +77,29 @@ const Auth = ({ currentUser }) => {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        // For registration, create the user account first
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // Set the display name for the user
+        const displayName = username.trim() || email.split('@')[0];
+        await updateProfile(user, {
+          displayName: displayName
+        });
+        
+        // Store additional user data in Firestore
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
+          email: user.email,
+          displayName: displayName,
+          createdAt: new Date()
+        });
+        
+        console.log('User profile updated with username:', displayName);
       }
       setEmail('');
       setPassword('');
+      setUsername('');
     } catch (err) {
       console.error('Authentication error:', err);
       setError(getErrorMessage(err.code) || err.message);
@@ -98,7 +120,27 @@ const Auth = ({ currentUser }) => {
     
     try {
       console.log('Attempting anonymous sign-in');
-      await signInAnonymously(auth);
+      const userCredential = await signInAnonymously(auth);
+      const user = userCredential.user;
+      
+      // Generate a random guest name if username is provided, otherwise use Guest + random number
+      const guestName = username.trim() || `Guest${Math.floor(Math.random() * 10000)}`;
+      
+      // Set the display name for anonymous user
+      await updateProfile(user, {
+        displayName: guestName
+      });
+      
+      // Store anonymous user data in Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        uid: user.uid,
+        displayName: guestName,
+        isAnonymous: true,
+        createdAt: new Date()
+      });
+      
+      console.log('Anonymous user profile created with name:', guestName);
+      setUsername('');
     } catch (err) {
       console.error('Anonymous sign-in error:', err);
       setError(getErrorMessage(err.code) || err.message);
@@ -120,7 +162,7 @@ const Auth = ({ currentUser }) => {
   if (currentUser) {
     return (
       <div className="auth-container signed-in">
-        <p>Signed in as {currentUser.email || 'Anonymous User'}</p>
+        <p>Signed in as {currentUser.displayName || currentUser.email || 'Anonymous User'}</p>
         <button onClick={handleSignOut} className="auth-button sign-out">Sign Out</button>
       </div>
     );
@@ -130,6 +172,14 @@ const Auth = ({ currentUser }) => {
     <div className="auth-container">
       <h3>{isLogin ? 'Sign In' : 'Sign Up'}</h3>
       <form onSubmit={handleAuth} className="auth-form">
+        {!isLogin && (
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username (optional)"
+          />
+        )}
         <input
           type="email"
           value={email}

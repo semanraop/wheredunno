@@ -105,12 +105,12 @@ export const detectWhereaboutInMessage = (message) => {
     
     // Standard Malay patterns
     /(?:pergi pi|ke|ke|gi|pegi) ([a-z0-9\s]+)/i,
-    /(?:nak|mahu|hendak) (?:pergi|ke|gi) ([a-z0-9\s]+)/i,
+    /(?:nak|mahu|hendak) (?:pergi|ke|gi|pi) ([a-z0-9\s]+)/i,
     
     // Malay slang patterns
     /(?:aku|saya|sy|gua|gw|aq) (?:da|dah|sdh|sudah) (?:kat|kt|di|dekat) ([a-z0-9\s]+)/i, // I am already at X
     /(?:skrg|sekarang) (?:aku|saya|sy|gua|gw|aq) (?:kat|kt|di|dekat) ([a-z0-9\s]+)/i, // Now I am at X
-    /(?:aku|saya|sy|gua|gw|aq) (?:otw|on the way|jalan|pegi|pergi) ([a-z0-9\s]+)/i, // I'm on the way to X
+    /(?:aku|saya|sy|gua|gw|aq) (?:otw|on the way|jalan|pegi|pergi|pi) ([a-z0-9\s]+)/i, // I'm on the way to X
     /(?:da|dah|sdh|sudah) (?:sampai|smpi) ([a-z0-9\s]+)/i, // Already arrived at X
     /(?:kat|kt|ada kat|ada kt) ([a-z0-9\s]+)/i // At X (very short form)
   ];

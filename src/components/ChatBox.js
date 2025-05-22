@@ -172,14 +172,22 @@ const ChatBox = () => {
     if (newMessage.trim() === '') return;
 
     try {
+      // Get the current user's display name
+      const currentUser = auth.currentUser;
+      const userId = currentUser ? currentUser.uid : 'anonymous';
+      const userName = currentUser && currentUser.displayName ? 
+                      currentUser.displayName : 
+                      (currentUser && currentUser.email ? currentUser.email.split('@')[0] : 'Anonymous');
+      
       // Create a message object
       const messageData = {
         text: newMessage,
-        // In a real app, you would get the user ID from authentication
-        userId: auth.currentUser ? auth.currentUser.uid : 'anonymous',
-        userName: auth.currentUser ? auth.currentUser.displayName || 'User' : 'Anonymous',
+        userId: userId,
+        userName: userName,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
+
+      console.log('Sending message as:', userName);
 
       // Add message to Firestore
       await addMessage(messageData);
